@@ -59,7 +59,7 @@ function viewProducts() {
             console.log("Quantity: ", res[i].stock_quantity);
             console.log("-----------------------------");
         }
-        manager();
+        connection.end();
     });
 }
 
@@ -71,7 +71,7 @@ function lowInventory() {
             console.log(res[i].product_name);
             console.log("Quantity: ", res[i].stock_quantity);
         }
-        manager();
+        connection.end();
     });
 }
 
@@ -91,17 +91,32 @@ function addInventory() {
     ]).then (function(input) {
         var query = "SELECT * FROM products WHERE ?";
         connection.query (query, {item_id: input.item_id}, function(err, res) {
-            if (err) throw err;
-            console.log ("existing inventory count: ", res[0].stock_quantity);
-            console.log("added inventory: ", input.stock_quantity);
-
-            
-            // console.log ("New inventory count for Item ID ", item_id, " has been updated to ", )
+            if (err) {
+                throw err;
+            } else {
+                // console.log ("existing inventory count: ", res[0].stock_quantity);
+                // console.log("added inventory: ", input.stock_quantity);
+                var query2 = "UPDATE products SET ? WHERE ?";
+                connection.query (query2, [
+                {
+                    stock_quantity: parseInt(res[0].stock_quantity) + parseInt(input.stock_quantity)
+                },
+                {
+                    item_id: input.item_id
+                }
+                ],function(err) {
+                    if (err) throw err;
+                    console.log("Inventory has been updated");
+                    console.log("Product ID: ", input.item_id, "(",res[0].product_name,")");
+                    console.log("Previous Inventory: ", res[0].stock_quantity);
+                    console.log("Current Inventory: ", parseInt(res[0].stock_quantity) + parseInt(input.stock_quantity));
+                    connection.end();
+                })
+            }
         })
     })
 }
 
-// function addProduct() {
-//     var query = "INSERT INTO products SET ?";
-//     connection.query (query, )
-// }
+function newProduct() {
+    
+}
